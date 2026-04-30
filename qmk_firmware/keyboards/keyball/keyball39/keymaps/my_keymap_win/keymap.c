@@ -25,9 +25,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // keymap for default
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    LCTL_T(KC_A)     , LALT_T(KC_S)     , LSFT_T(KC_D)     , LGUI_T(KC_F)     , KC_G     ,                            KC_H     , RGUI_T(KC_J)     , RSFT_T(KC_K)     , RALT_T(KC_L)     , RCTL_T(KC_COLN)  ,
+    LCTL_T(KC_A), KC_S, LSFT_T(KC_D)     , KC_F     , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_COLN  ,
     KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  ,
-    MO(3)  , KC_LGUI  , KC_LALT  ,KC_LNG2,LT(2,KC_SPC),KC_LNG1,KC_BSPC,LT(1,KC_ENT),XXXXXXX,XXXXXXX,XXXXXXX, KC_ESC
+    MO(3)  , KC_LCTL  , KC_LALT  ,KC_RSFT,LT(2,KC_SPC),KC_RCTL,KC_BSPC,LT(1,KC_ENT),XXXXXXX,XXXXXXX,XXXXXXX, KC_ESC
   ),
 
   [1] = LAYOUT_universal(
@@ -48,7 +48,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_KP_ASTERISK  , KC_KP_7  , KC_KP_8  , KC_KP_9  , KC_KP_MINUS  ,                     _______  , KC_BTN1  , KC_BTN3  , KC_BTN2  , _______ ,
     KC_KP_SLASH , KC_KP_4  , KC_KP_5  , KC_KP_6  , KC_KP_PLUS  ,                      _______  , KC_HOME  , KC_UP    , KC_END   , _______ ,
     KC_KP_0     , KC_KP_1  , KC_KP_2  , KC_KP_3  , KC_KP_DOT   ,                      _______  , KC_LEFT  , KC_DOWN  , KC_RGHT  , _______ ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
+    _______  , _______  , _______  , _______  , _______  , _______  ,      KC_BTN4  , KC_BTN5  , _______  , _______  , _______  , _______
   ),
 };
 // clang-format on
