@@ -53,6 +53,30 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case RCTL_T(KC_A):
+            return 300;  // Ctrl誤爆防止: 長く保持しないとCtrlにならない
+        case LSFT_T(KC_D):
+        case LT(2, KC_SPC):
+            return 150;  // Shift/Layer2: 短時間のholdでも発動するように
+        default:
+            return TAPPING_TERM;
+    }
+}
+
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case RCTL_T(KC_A):
+            return false;  // ローリング中は Ctrl にしない（tap優先）
+        case LSFT_T(KC_D):
+        case LT(2, KC_SPC):
+            return true;   // 別キーを押した瞬間に Shift/Layer2 確定
+        default:
+            return false;
+    }
+}
+
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the middle layer is 2
     keyball_set_scroll_mode(get_highest_layer(state) == 2);
