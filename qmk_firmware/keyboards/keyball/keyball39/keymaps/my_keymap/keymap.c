@@ -61,6 +61,8 @@ static void tap_with_mod(uint16_t mod, uint16_t code) {
 }
 
 #ifdef OS_DETECTION_ENABLE
+#    include "os_detection.h" // os_variant_t / OS_MACOS などの定義
+
 // os_detection が OS を確定したときに呼ばれる
 bool process_detected_host_os_user(os_variant_t os) {
     g_os = (os == OS_MACOS || os == OS_IOS) ? OS_MAC : OS_WIN;
