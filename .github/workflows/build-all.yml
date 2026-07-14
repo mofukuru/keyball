@@ -40,6 +40,12 @@ jobs:
             keymap:   via_Left
           - keyboard: keyball46
             keymap:   via_Both
+          - keyboard: keyball39
+            keymap:   my_keymap
+          - keyboard: keyball39
+            keymap:   my_keymap_mac
+          - keyboard: keyball39
+            keymap:   my_keymap_win
 
     uses: ./.github/workflows/build-firmware.yml
     with:
