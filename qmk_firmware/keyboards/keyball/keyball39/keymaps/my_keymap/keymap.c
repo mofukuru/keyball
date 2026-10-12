@@ -43,6 +43,11 @@ enum my_keycodes {
     U_WR,     // 単語右移動   : Mac=Opt+Right  / Win=Ctrl+Right
     U_LNL,    // 行頭         : Mac=Cmd+Left   / Win=Home
     U_LNR,    // 行末         : Mac=Cmd+Right  / Win=End
+    U_ATAB,   // アプリ切替   : Mac=Cmd+Tab    / Win=Alt+Tab（レイヤー4を離すまで修飾を保持）
+    U_ATABR,  // アプリ逆切替 : Mac=Cmd+Shift+Tab / Win=Alt+Shift+Tab
+    U_ZIN,    // 拡大         : Mac=Cmd+=      / Win=Ctrl+=
+    U_ZOUT,   // 縮小         : Mac=Cmd+-      / Win=Ctrl+-
+    U_ZRST,   // 100%         : Mac=Cmd+0      / Win=Ctrl+0
 };
 
 typedef enum { OS_WIN = 0, OS_MAC } my_os_t;
@@ -52,6 +57,9 @@ static my_os_t g_os = OS_WIN;
 static inline uint16_t primary_mod(void) {
     return g_os == OS_MAC ? KC_LGUI : KC_LCTL;
 }
+
+// U_ATAB 中に押しっぱなしにしている修飾（0 なら未使用）
+static uint16_t g_atab_mod = 0;
 
 // mod を押しながら code を1回叩く
 static void tap_with_mod(uint16_t mod, uint16_t code) {
@@ -77,7 +85,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
     LCTL_T(KC_A), KC_S  , LSFT_T(KC_D), KC_F   , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_COLN  ,
     KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  ,
-    MO(3)    , KC_LGUI  , KC_LALT  , KC_RSFT  , LT(2,KC_SPC), KC_LCTL  ,     KC_BSPC, LT(1,KC_ENT), XXXXXXX, XXXXXXX, XXXXXXX, KC_ESC
+    MO(3)    , KC_LGUI  , KC_LALT  , KC_RSFT  , LT(2,KC_SPC), KC_LCTL  ,     KC_BSPC, LT(1,KC_ENT), XXXXXXX, XXXXXXX, XXXXXXX, LT(4,KC_ESC)
   ),
 
   // [1] 数字・ファンクション + OS対応の編集/スクショ/OSトグル
@@ -102,6 +110,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_KP_SLASH , KC_KP_4  , KC_KP_5  , KC_KP_6  , KC_KP_PLUS  ,                      _______  , KC_HOME  , KC_UP    , KC_END   , _______ ,
     KC_KP_0     , KC_KP_1  , KC_KP_2  , KC_KP_3  , KC_KP_DOT   ,                      _______  , KC_LEFT  , KC_DOWN  , KC_RGHT  , _______ ,
     _______  , _______  , _______  , _______  , _______  , _______  ,      KC_BTN4  , KC_BTN5  , _______  , _______  , _______  , _______
+  ),
+
+  // [4] SYS（右下 Esc 長押し）: アプリ・タブ切替、音量、拡大縮小。押さえる側が右小指なので左手だけに置く
+  [4] = LAYOUT_universal(
+    U_ATABR  , U_ATAB   , XXXXXXX  , C(S(KC_TAB)), C(KC_TAB),                         XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,
+    KC_VOLD  , KC_VOLU  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,                            XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,
+    U_ZOUT   , U_ZIN    , U_ZRST   , XXXXXXX  , XXXXXXX  ,                            XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,
+    XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,      XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , _______
   ),
 };
 // clang-format on
@@ -157,6 +173,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case U_WR: tap_with_mod(g_os == OS_MAC ? KC_LALT : KC_LCTL, KC_RIGHT); return false;
         case U_LNL: if (g_os == OS_MAC) { tap_with_mod(KC_LGUI, KC_LEFT); }  else { tap_code(KC_HOME); } return false;
         case U_LNR: if (g_os == OS_MAC) { tap_with_mod(KC_LGUI, KC_RIGHT); } else { tap_code(KC_END); }  return false;
+
+        case U_ZIN:  tap_with_mod(p, KC_EQL);  return false;
+        case U_ZOUT: tap_with_mod(p, KC_MINS); return false;
+        case U_ZRST: tap_with_mod(p, KC_0);    return false;
+
+        case U_ATAB:
+        case U_ATABR: // 修飾はレイヤー4を離したときに layer_state_set_user で外す
+            if (!g_atab_mod) {
+                g_atab_mod = g_os == OS_MAC ? KC_LGUI : KC_LALT;
+                register_code(g_atab_mod);
+            }
+            tap_code16(keycode == U_ATABR ? S(KC_TAB) : KC_TAB);
+            return false;
     }
     return true;
 }
@@ -179,21 +208,18 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case LCTL_T(KC_A):
             return 300;  // Ctrl誤爆防止: 長く保持しないとCtrlにならない
-        case LSFT_T(KC_D):
-        case LT(2, KC_SPC):
-            return 150;  // Shift/Layer2: 短時間のholdでも発動するように
         default:
             return TAPPING_TERM;
     }
 }
 
-bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+// 別キーを「押して離した」ときだけ hold にする。押下が重なるだけのロール打鍵は tap のまま
+// （Space を leader にした Neovim で <Space>ff が記号レイヤーに化けないように）
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LCTL_T(KC_A):
-            return false;  // ローリング中は Ctrl にしない（tap優先）
-        case LSFT_T(KC_D):
         case LT(2, KC_SPC):
-            return true;   // 別キーを押した瞬間に Shift/Layer2 確定
+        case LT(4, KC_ESC):
+            return true;
         default:
             return false;
     }
@@ -202,6 +228,12 @@ bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
 layer_state_t layer_state_set_user(layer_state_t state) {
     // Auto enable scroll mode when the middle layer is 2
     keyball_set_scroll_mode(get_highest_layer(state) == 2);
+
+    // レイヤー4を離したらアプリ切替の修飾を外して選択を確定する
+    if (g_atab_mod && !layer_state_cmp(state, 4)) {
+        unregister_code(g_atab_mod);
+        g_atab_mod = 0;
+    }
     return state;
 }
 

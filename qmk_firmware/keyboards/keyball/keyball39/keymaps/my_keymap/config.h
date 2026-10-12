@@ -40,3 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // OS 自動判定: 接続し直したときに再検出できるようにする
 #define OS_DETECTION_KEYBOARD_RESET
+
+// keymap.c の get_tapping_term / get_permissive_hold を有効にする
+#define TAPPING_TERM_PER_KEY
+#define PERMISSIVE_HOLD_PER_KEY
