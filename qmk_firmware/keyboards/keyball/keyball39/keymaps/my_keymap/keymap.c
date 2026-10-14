@@ -24,27 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // OS 差を吸収する論理キーコード
 //
 // Mac / Win を os_detection で自動判別し、同じ物理キーで
-// 「論理的に同じ操作」を実現する。U_OS で手動上書きも可能。
+// 「論理的に同じ操作」を実現する。
 //////////////////////////////////////////////////////////////////////////////
 
 enum my_keycodes {
-    U_OS = KEYBALL_SAFE_RANGE, // OS 手動トグル（自動判定の上書き用）
-    U_CPY,    // コピー       : Mac=Cmd+C      / Win=Ctrl+C
-    U_PST,    // ペースト     : Mac=Cmd+V      / Win=Ctrl+V
-    U_CUT,    // カット       : Mac=Cmd+X      / Win=Ctrl+X
-    U_UNDO,   // 元に戻す     : Mac=Cmd+Z      / Win=Ctrl+Z
-    U_REDO,   // やり直し     : Mac=Cmd+Shift+Z/ Win=Ctrl+Y
-    U_SALL,   // 全選択       : Mac=Cmd+A      / Win=Ctrl+A
-    U_SAVE,   // 保存         : Mac=Cmd+S      / Win=Ctrl+S
-    U_FIND,   // 検索         : Mac=Cmd+F      / Win=Ctrl+F
-    U_SSHOT,  // 範囲スクショ : Mac=Cmd+Shift+4/ Win=Win+Shift+S
+    U_SSHOT = KEYBALL_SAFE_RANGE, // 範囲スクショ : Mac=Cmd+Shift+4/ Win=Win+Shift+S
     U_SSFULL, // 全画面スクショ: Mac=Cmd+Shift+3/ Win=PrintScreen
-    U_WL,     // 単語左移動   : Mac=Opt+Left   / Win=Ctrl+Left
-    U_WR,     // 単語右移動   : Mac=Opt+Right  / Win=Ctrl+Right
-    U_LNL,    // 行頭         : Mac=Cmd+Left   / Win=Home
-    U_LNR,    // 行末         : Mac=Cmd+Right  / Win=End
-    U_ATAB,   // アプリ切替   : Mac=Cmd+Tab    / Win=Alt+Tab（レイヤー4を離すまで修飾を保持）
-    U_ATABR,  // アプリ逆切替 : Mac=Cmd+Shift+Tab / Win=Alt+Shift+Tab
     U_ZIN,    // 拡大         : Mac=Cmd+=      / Win=Ctrl+=
     U_ZOUT,   // 縮小         : Mac=Cmd+-      / Win=Ctrl+-
     U_ZRST,   // 100%         : Mac=Cmd+0      / Win=Ctrl+0
@@ -53,13 +38,10 @@ enum my_keycodes {
 typedef enum { OS_WIN = 0, OS_MAC } my_os_t;
 static my_os_t g_os = OS_WIN;
 
-// コピペ等のプライマリ修飾: Mac は Cmd(GUI)、Win は Ctrl
+// 拡大縮小のプライマリ修飾: Mac は Cmd(GUI)、Win は Ctrl
 static inline uint16_t primary_mod(void) {
     return g_os == OS_MAC ? KC_LGUI : KC_LCTL;
 }
-
-// U_ATAB 中に押しっぱなしにしている修飾（0 なら未使用）
-static uint16_t g_atab_mod = 0;
 
 // mod を押しながら code を1回叩く
 static void tap_with_mod(uint16_t mod, uint16_t code) {
@@ -74,50 +56,47 @@ static void tap_with_mod(uint16_t mod, uint16_t code) {
 // os_detection が OS を確定したときに呼ばれる
 bool process_detected_host_os_user(os_variant_t os) {
     g_os = (os == OS_MACOS || os == OS_IOS) ? OS_MAC : OS_WIN;
+    // Mac では左下の Win/Alt を入れ替え、中指を Cmd にする
+    // （Mac の Cmd+Tab と Win の Alt+Tab を同じ指で打てるように）
+    keymap_config.swap_lalt_lgui = (g_os == OS_MAC);
     return true;
 }
 #endif
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  // [0] ベース: 英字・記号は Mac/Win 共通。親指の修飾は GUI(=Cmd/Win) に統一
+  // [0] ベース: 英字・Space・Enter には hold/tap を付けない。Mac では Win(薬指)=Option、Alt(中指)=Cmd
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    LCTL_T(KC_A), KC_S  , LSFT_T(KC_D), KC_F   , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_COLN  ,
+    KC_A     , KC_S     , KC_D     , KC_F     , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_COLN  ,
     KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  ,
-    MO(3)    , KC_LGUI  , KC_LALT  , KC_RSFT  , LT(2,KC_SPC), KC_LCTL  ,     KC_BSPC, LT(1,KC_ENT), XXXXXXX, XXXXXXX, XXXXXXX, LT(4,KC_ESC)
+    LT(3,KC_ESC), KC_LGUI, KC_LALT , KC_RSFT  , MO(1)    , KC_LCTL  ,     LT(2,KC_BSPC), KC_SPC, XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT
   ),
 
-  // [1] 数字・ファンクション + OS対応の編集/スクショ/OSトグル
+  // [1] 記号（左親指。押している間スクロールモード）
   [1] = LAYOUT_universal(
-    KC_F1    , KC_F2    , KC_F3    , KC_F4    , KC_F5    ,                            KC_F6    , KC_F7    , KC_F8    , KC_F9    , KC_F10   ,
-    KC_1     , KC_2     , KC_3     , KC_4     , KC_5     ,                            KC_6     , KC_7     , KC_8     , KC_9     , KC_0     ,
-    KC_F11   , KC_F12   , KC_TAB   , U_SSHOT  , U_SSFULL ,                            U_UNDO   , U_REDO   , U_CUT    , U_CPY    , U_PST    ,
-    _______  , U_OS     , U_SALL   , U_SAVE   , U_FIND   , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
-  ),
-
-  // [2] 記号（押している間スクロールモード）
-  [2] = LAYOUT_universal(
     KC_EXLM  , KC_AT    , KC_HASH  , KC_DLR   , KC_PERC  ,                            KC_CIRC  , KC_AMPR  , KC_ASTR  , KC_QUES  , KC_BSLS  ,
     KC_LBRC  , KC_LCBR  , KC_LPRN  , KC_LT    , KC_MINS  ,                            KC_PLUS  , KC_GT    , KC_RPRN  , KC_RCBR  , KC_RBRC  ,
     KC_GRV   , KC_TILD  , KC_QUOT  , KC_DQUO  , KC_UNDS  ,                            KC_EQL   , KC_PIPE  , KC_SCLN  , _______  , _______  ,
     _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
 
-  // [3] テンキー・マウス・矢印
-  [3] = LAYOUT_universal(
-    KC_KP_ASTERISK  , KC_KP_7  , KC_KP_8  , KC_KP_9  , KC_KP_MINUS  ,                     _______  , KC_BTN1  , KC_BTN3  , KC_BTN2  , _______ ,
-    KC_KP_SLASH , KC_KP_4  , KC_KP_5  , KC_KP_6  , KC_KP_PLUS  ,                      _______  , KC_HOME  , KC_UP    , KC_END   , _______ ,
-    KC_KP_0     , KC_KP_1  , KC_KP_2  , KC_KP_3  , KC_KP_DOT   ,                      _______  , KC_LEFT  , KC_DOWN  , KC_RGHT  , _______ ,
-    _______  , _______  , _______  , _______  , _______  , _______  ,      KC_BTN4  , KC_BTN5  , _______  , _______  , _______  , _______
+  // [2] 右手テンキー・左手 F キー（右親指 BSpc 長押し）
+  // 左端の Tab/Ctrl/Shift と、透過した下段の修飾でタブ・アプリ切替を打つ
+  // テンキーは KC_KP_* ではなく通常の数字（Win の NumLock オフで Home などに化けないように）
+  [2] = LAYOUT_universal(
+    KC_TAB   , KC_F9    , KC_F10   , KC_F11   , KC_F12   ,                            KC_ASTR  , KC_7     , KC_8     , KC_9     , KC_MINS  ,
+    KC_LCTL  , KC_F5    , KC_F6    , KC_F7    , KC_F8    ,                            KC_SLSH  , KC_4     , KC_5     , KC_6     , KC_PLUS  ,
+    KC_LSFT  , KC_F1    , KC_F2    , KC_F3    , KC_F4    ,                            KC_0     , KC_1     , KC_2     , KC_3     , KC_DOT   ,
+    _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
 
-  // [4] SYS（右下 Esc 長押し）: アプリ・タブ切替、音量、拡大縮小。押さえる側が右小指なので左手だけに置く
-  [4] = LAYOUT_universal(
-    U_ATABR  , U_ATAB   , XXXXXXX  , C(S(KC_TAB)), C(KC_TAB),                         XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,
-    KC_VOLD  , KC_VOLU  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,                            XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,
-    U_ZOUT   , U_ZIN    , U_ZRST   , XXXXXXX  , XXXXXXX  ,                            XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,
-    XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,      XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , _______
+  // [3] マウス・矢印（左小指 Esc 長押し）。左手は小指で押さえるので下段だけ使う
+  [3] = LAYOUT_universal(
+    XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,                            KC_VOLU  , KC_BTN1  , KC_BTN3  , KC_BTN2  , U_ZIN    ,
+    XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,                            KC_VOLD  , KC_HOME  , KC_UP    , KC_END   , U_ZOUT   ,
+    XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX  ,                            XXXXXXX  , KC_LEFT  , KC_DOWN  , KC_RGHT  , U_ZRST   ,
+    _______  , U_SSHOT  , U_SSFULL , _______  , XXXXXXX  , _______  ,      KC_BTN4  , KC_BTN5  , XXXXXXX  , XXXXXXX  , XXXXXXX  , XXXXXXX
   ),
 };
 // clang-format on
@@ -129,30 +108,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (!record->event.pressed) {
         return true;
     }
-    const uint16_t p = primary_mod();
     switch (keycode) {
-        case U_OS:
-            g_os = (g_os == OS_MAC) ? OS_WIN : OS_MAC;
-            return false;
-
-        case U_CPY:  tap_with_mod(p, KC_C); return false;
-        case U_PST:  tap_with_mod(p, KC_V); return false;
-        case U_CUT:  tap_with_mod(p, KC_X); return false;
-        case U_SALL: tap_with_mod(p, KC_A); return false;
-        case U_SAVE: tap_with_mod(p, KC_S); return false;
-        case U_FIND: tap_with_mod(p, KC_F); return false;
-        case U_UNDO: tap_with_mod(p, KC_Z); return false;
-
-        case U_REDO:
-            if (g_os == OS_MAC) {
-                register_code(KC_LSFT);
-                tap_with_mod(KC_LGUI, KC_Z);
-                unregister_code(KC_LSFT);
-            } else {
-                tap_with_mod(KC_LCTL, KC_Y);
-            }
-            return false;
-
         case U_SSHOT: // 範囲スクショ
             register_code(KC_LSFT);
             tap_with_mod(KC_LGUI, g_os == OS_MAC ? KC_4 : KC_S);
@@ -169,23 +125,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-        case U_WL: tap_with_mod(g_os == OS_MAC ? KC_LALT : KC_LCTL, KC_LEFT);  return false;
-        case U_WR: tap_with_mod(g_os == OS_MAC ? KC_LALT : KC_LCTL, KC_RIGHT); return false;
-        case U_LNL: if (g_os == OS_MAC) { tap_with_mod(KC_LGUI, KC_LEFT); }  else { tap_code(KC_HOME); } return false;
-        case U_LNR: if (g_os == OS_MAC) { tap_with_mod(KC_LGUI, KC_RIGHT); } else { tap_code(KC_END); }  return false;
-
-        case U_ZIN:  tap_with_mod(p, KC_EQL);  return false;
-        case U_ZOUT: tap_with_mod(p, KC_MINS); return false;
-        case U_ZRST: tap_with_mod(p, KC_0);    return false;
-
-        case U_ATAB:
-        case U_ATABR: // 修飾はレイヤー4を離したときに layer_state_set_user で外す
-            if (!g_atab_mod) {
-                g_atab_mod = g_os == OS_MAC ? KC_LGUI : KC_LALT;
-                register_code(g_atab_mod);
-            }
-            tap_code16(keycode == U_ATABR ? S(KC_TAB) : KC_TAB);
-            return false;
+        case U_ZIN:  tap_with_mod(primary_mod(), KC_EQL);  return false;
+        case U_ZOUT: tap_with_mod(primary_mod(), KC_MINS); return false;
+        case U_ZRST: tap_with_mod(primary_mod(), KC_0);    return false;
     }
     return true;
 }
@@ -204,21 +146,12 @@ void housekeeping_task_user(void) {
 //////////////////////////////////////////////////////////////////////////////
 // Tap/Hold チューニング
 
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case LCTL_T(KC_A):
-            return 300;  // Ctrl誤爆防止: 長く保持しないとCtrlにならない
-        default:
-            return TAPPING_TERM;
-    }
-}
-
-// 別キーを「押して離した」ときだけ hold にする。押下が重なるだけのロール打鍵は tap のまま
-// （Space を leader にした Neovim で <Space>ff が記号レイヤーに化けないように）
+// 別キーを「押して離した」ときだけ hold にする。
+// BSpc/L2 だけに付け、数字を速く打っても BSpc に化けないようにする。
+// Esc/L3 には付けない（Vim で Esc の直後に重ねて打ったキーが L3 に化けないように）
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case LT(2, KC_SPC):
-        case LT(4, KC_ESC):
+        case LT(2, KC_BSPC):
             return true;
         default:
             return false;
@@ -226,14 +159,8 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
 }
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    // Auto enable scroll mode when the middle layer is 2
-    keyball_set_scroll_mode(get_highest_layer(state) == 2);
-
-    // レイヤー4を離したらアプリ切替の修飾を外して選択を確定する
-    if (g_atab_mod && !layer_state_cmp(state, 4)) {
-        unregister_code(g_atab_mod);
-        g_atab_mod = 0;
-    }
+    // 記号レイヤー(1)を押している間はボールでスクロール
+    keyball_set_scroll_mode(get_highest_layer(state) == 1);
     return state;
 }
 

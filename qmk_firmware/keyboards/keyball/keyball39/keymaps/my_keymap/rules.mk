@@ -6,5 +6,5 @@ OLED_ENABLE = yes
 OS_DETECTION_ENABLE = yes
 DEFERRED_EXEC_ENABLE = yes
 
-# レイヤー4の音量キー（KC_VOLU / KC_VOLD）用
+# レイヤー3の音量キー（KC_VOLU / KC_VOLD）用
 EXTRAKEY_ENABLE = yes
