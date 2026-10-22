@@ -66,11 +66,12 @@ bool process_detected_host_os_user(os_variant_t os) {
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // [0] ベース: 英字・Space・Enter には hold/tap を付けない。Mac では Win(薬指)=Option、Alt(中指)=Cmd
+  // 親指の Shift はワンショット: タップして離すと次の1キーに Shift が付く（Shift をタップ → Ctrl+T で Ctrl+Shift+T）
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
     KC_A     , KC_S     , KC_D     , KC_F     , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_COLN  ,
     KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  ,
-    LT(3,KC_ESC), KC_LGUI, KC_LALT , KC_RSFT  , MO(1)    , KC_LCTL  ,     LT(2,KC_BSPC), KC_SPC, XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT
+    LT(3,KC_ESC), KC_LGUI, KC_LALT , OSM(MOD_RSFT), MO(1)    , KC_LCTL  ,     LT(2,KC_BSPC), KC_SPC, XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT
   ),
 
   // [1] 記号（左親指。押している間スクロールモード）
@@ -81,13 +82,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
 
-  // [2] 右手テンキー・左手 F キー（右親指 BSpc 長押し）
-  // 左端の Tab/Ctrl/Shift と、透過した下段の修飾でタブ・アプリ切替を打つ
-  // テンキーは KC_KP_* ではなく通常の数字（Win の NumLock オフで Home などに化けないように）
+  // [2] 数字・F キー（右親指 BSpc 長押し）
+  // 数字はホーム行に普通のキーボードと同じ列で並べ、F キーは同じ番号の数字の真上に置く
+  // Shift と Tab を隣り合わせにして Shift+Tab を片手で打てるようにする。下段は透過（Ctrl+Tab・Alt+Tab 用）
   [2] = LAYOUT_universal(
-    KC_TAB   , KC_F9    , KC_F10   , KC_F11   , KC_F12   ,                            KC_ASTR  , KC_7     , KC_8     , KC_9     , KC_MINS  ,
-    KC_LCTL  , KC_F5    , KC_F6    , KC_F7    , KC_F8    ,                            KC_SLSH  , KC_4     , KC_5     , KC_6     , KC_PLUS  ,
-    KC_LSFT  , KC_F1    , KC_F2    , KC_F3    , KC_F4    ,                            KC_0     , KC_1     , KC_2     , KC_3     , KC_DOT   ,
+    KC_F1    , KC_F2    , KC_F3    , KC_F4    , KC_F5    ,                            KC_F6    , KC_F7    , KC_F8    , KC_F9    , KC_F10   ,
+    KC_1     , KC_2     , KC_3     , KC_4     , KC_5     ,                            KC_6     , KC_7     , KC_8     , KC_9     , KC_0     ,
+    KC_LSFT  , KC_TAB   , KC_F11   , KC_F12   , XXXXXXX  ,                            KC_MINS  , XXXXXXX  , KC_COMM  , KC_DOT   , KC_SLSH  ,
     _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
 
