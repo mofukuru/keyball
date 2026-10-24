@@ -69,7 +69,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // 親指の Shift はワンショット: タップして離すと次の1キーに Shift が付く（Shift をタップ → Ctrl+T で Ctrl+Shift+T）
   [0] = LAYOUT_universal(
     KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    KC_A     , KC_S     , KC_D     , KC_F     , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_COLN  ,
+    KC_A     , KC_S     , KC_D     , KC_F     , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_ENT   ,
     KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  ,
     LT(3,KC_ESC), KC_LGUI, KC_LALT , OSM(MOD_RSFT), MO(1)    , KC_LCTL  ,     LT(2,KC_BSPC), KC_SPC, XXXXXXX, XXXXXXX, XXXXXXX, KC_ENT
   ),
@@ -78,7 +78,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [1] = LAYOUT_universal(
     KC_EXLM  , KC_AT    , KC_HASH  , KC_DLR   , KC_PERC  ,                            KC_CIRC  , KC_AMPR  , KC_ASTR  , KC_QUES  , KC_BSLS  ,
     KC_LBRC  , KC_LCBR  , KC_LPRN  , KC_LT    , KC_MINS  ,                            KC_PLUS  , KC_GT    , KC_RPRN  , KC_RCBR  , KC_RBRC  ,
-    KC_GRV   , KC_TILD  , KC_QUOT  , KC_DQUO  , KC_UNDS  ,                            KC_EQL   , KC_PIPE  , KC_SCLN  , _______  , _______  ,
+    KC_GRV   , KC_TILD  , KC_QUOT  , KC_DQUO  , KC_UNDS  ,                            KC_EQL   , KC_PIPE  , KC_SCLN  , KC_COLN  , _______  ,
     _______  , _______  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , _______  , _______
   ),
 
