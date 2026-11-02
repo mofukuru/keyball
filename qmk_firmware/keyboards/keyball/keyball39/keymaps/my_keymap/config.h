@@ -36,9 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #define AUTO_MOUSE_DEFAULT_LAYER 1
 
-// OS 自動判定: 接続し直したときに再検出できるようにする
-#define OS_DETECTION_KEYBOARD_RESET
-
 // keymap.c の get_permissive_hold を有効にする
 #define PERMISSIVE_HOLD_PER_KEY
 

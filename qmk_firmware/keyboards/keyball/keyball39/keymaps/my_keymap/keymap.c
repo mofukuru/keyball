@@ -53,13 +53,18 @@ static void tap_with_mod(uint16_t mod, uint16_t code) {
 #ifdef OS_DETECTION_ENABLE
 #    include "os_detection.h" // os_variant_t / OS_MACOS などの定義
 
-// os_detection が OS を確定したときに呼ばれる
-bool process_detected_host_os_user(os_variant_t os) {
+// QMK 0.22.14 には判定後のコールバックが無いので、判定結果を見に行く
+static void sync_host_os(void) {
+    static os_variant_t last_os = OS_UNSURE;
+    os_variant_t os = detected_host_os();
+    if (os == last_os) {
+        return;
+    }
+    last_os = os;
     g_os = (os == OS_MACOS || os == OS_IOS) ? OS_MAC : OS_WIN;
-    // Mac では左下の Win/Alt を入れ替え、中指を Cmd にする
+    // Mac・iPad では左下の Win/Alt を入れ替え、中指を Cmd にする
     // （Mac の Cmd+Tab と Win の Alt+Tab を同じ指で打てるように）
     keymap_config.swap_lalt_lgui = (g_os == OS_MAC);
-    return true;
 }
 #endif
 
@@ -139,6 +144,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 //   Caps ON 状態を自動で解除する用途）
 
 void housekeeping_task_user(void) {
+#ifdef OS_DETECTION_ENABLE
+    sync_host_os();
+#endif
     if (host_keyboard_led_state().caps_lock) {
         tap_code(KC_CAPS);
     }
