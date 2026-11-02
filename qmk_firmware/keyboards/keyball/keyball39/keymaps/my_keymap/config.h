@@ -36,6 +36,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #define AUTO_MOUSE_DEFAULT_LAYER 1
 
+// Keyball は既定で keycode_config() を無効にしている。
+// keymap.c の swap_lalt_lgui を効かせるために残す
+#define KEYBALL_KEEP_MAGIC_FUNCTIONS
+
 // keymap.c の get_permissive_hold を有効にする
 #define PERMISSIVE_HOLD_PER_KEY
 
