@@ -177,9 +177,36 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 #    include "lib/oledkit/oledkit.h"
 
-void oledkit_render_info_user(void) {
-    keyball_oled_render_keyinfo();
-    keyball_oled_render_ballinfo();
-    keyball_oled_render_layerinfo();
+#    include "os_icons.h"
+
+// 左に 32x32 のロゴ、右に OS 名を出す
+static void render_os(const char *icon, const char *name) {
+    for (uint8_t page = 0; page < 4; page++) {
+        oled_set_cursor(0, page);
+        oled_write_raw_P(icon + page * 32, 32);
+    }
+    oled_set_cursor(7, 1);
+    oled_write_P(name, false);
 }
+
+// USB をつないだ側: 判定した OS のロゴを出す
+void oledkit_render_info_user(void) {
+    static os_variant_t shown = 0xFF;
+    os_variant_t        os    = detected_host_os();
+    if (os == shown) {
+        return;
+    }
+    shown = os;
+    oled_clear();
+    switch (os) {
+        case OS_WINDOWS: render_os(icon_win, PSTR("Windows"));     break;
+        case OS_MACOS:
+        case OS_IOS:     render_os(icon_apple, PSTR("Mac / iPad")); break;
+        case OS_LINUX:   oled_write_P(PSTR("Linux"), false);       break;
+        default:         oled_write_P(PSTR("Unknown"), false);     break;
+    }
+}
+
+// 反対側は何も出さない
+void oledkit_render_logo_user(void) {}
 #endif

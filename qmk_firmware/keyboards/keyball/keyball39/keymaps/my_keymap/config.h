@@ -46,3 +46,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // PC の起動時に USB の初期化が遅れると、つないだ側もスレーブと判定して認識されない。
 // マスターから通信が来なければ再起動して判定をやり直す
 #define SPLIT_WATCHDOG_ENABLE
+
+#ifdef OLED_ENABLE
+#    undef OLED_FONT_H
+#    undef OLED_FONT_END
+#    define OLED_FONT_H "keyboards/keyball/keyball39/keymaps/my_keymap/osfont.c"
+#    define OLED_FONT_END 126
+#endif
